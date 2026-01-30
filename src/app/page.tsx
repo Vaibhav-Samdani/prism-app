@@ -10,7 +10,11 @@ export default function Home() {
   }, []);
 
   if (isRefetching || isPending) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col min-h-screen items-center justify-center bg-background">
+        Loading...
+      </div>
+    );
   }
 
   const user = data?.user;
