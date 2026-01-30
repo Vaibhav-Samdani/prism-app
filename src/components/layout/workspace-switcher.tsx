@@ -16,18 +16,28 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-
-const WORKSPACES = [
-  { id: "1", name: "Personal" },
-  { id: "2", name: "College Project" },
-  { id: "3", name: "Startup Idea" },
-];
+import { useWorkspaces } from "@/hooks/use-workspaces";
+import { useWorkspaceStore } from "@/store/workspace-store";
+import { MorphingSquare } from "../ui/loader";
+import Link from "next/link";
 
 export default function WorkspaceSwitcher() {
+  const { workspaces } = useWorkspaces();
+  const { activeWorkspaceId, setActiveWorkspaceId } = useWorkspaceStore();
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(WORKSPACES[0].id);
+   const [search, setSearch] = React.useState("");
 
-  const current = WORKSPACES.find((w) => w.id === value);
+  const current = workspaces?.find((w) => w.id === activeWorkspaceId);
+
+
+  // 🔑 Filter workspaces based on search
+  const filteredWorkspaces = React.useMemo(() => {
+    if (!search.trim()) return workspaces;
+
+    return workspaces.filter((workspace) =>
+      workspace.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, workspaces]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -43,24 +53,26 @@ export default function WorkspaceSwitcher() {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[240px] p-0">
+      <PopoverContent className="w-60 p-0">
         <Command>
           <CommandInput placeholder="Switch workspace..." />
           <CommandEmpty>No workspace found.</CommandEmpty>
 
           <CommandGroup>
-            {WORKSPACES.map((workspace) => (
+            {workspaces.map((workspace) => (
               <CommandItem
-                key={workspace.id}
-                value={workspace.id}
+                key={workspace.name}
+                value={workspace.name}
                 onSelect={(currentValue) => {
-                  setValue(currentValue);
+                  setActiveWorkspaceId(currentValue);
                   setOpen(false);
                 }}
               >
                 <Check
                   className={`mr-2 h-4 w-4 ${
-                    value === workspace.id ? "opacity-100" : "opacity-0"
+                    activeWorkspaceId === workspace.id
+                      ? "opacity-100"
+                      : "opacity-0"
                   }`}
                 />
                 {workspace.name}
@@ -70,7 +82,7 @@ export default function WorkspaceSwitcher() {
 
           <CommandGroup>
             <CommandItem className="text-primary">
-              + Create workspace
+              <Link href="/dashboard/onboarding">+ Create workspace</Link>
             </CommandItem>
           </CommandGroup>
         </Command>

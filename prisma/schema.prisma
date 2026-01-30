@@ -13,7 +13,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 enum WorkspaceRole {
   OWNER
   ADMIN
@@ -24,7 +23,6 @@ model User {
   id            String            @id @default(uuid())
   email         String            @unique
   name          String?
-  role          String?
   profileImage  String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
@@ -88,6 +86,8 @@ model Verification {
 model Workspace {
   id          String            @id @default(uuid())
   name        String
+  slug        String            @unique
+  ownerId     String
   memberships WorkspaceMember[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -104,7 +104,8 @@ model WorkspaceMember {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([userId, workspaceId])
-  }
+}

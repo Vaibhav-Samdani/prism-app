@@ -16,6 +16,7 @@ import {
 
 import { LayoutGrid, CheckSquare, Settings } from "lucide-react";
 import WorkspaceSwitcher from "./workspace-switcher";
+import Link from "next/link";
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -60,10 +61,10 @@ export default function AppSidebar() {
                   asChild
                   isActive={pathname.startsWith("/dashboard/tasks")}
                 >
-                  <a href="/dashboard/tasks">
+                  <Link href="/dashboard/tasks">
                     <CheckSquare />
                     <span>My Tasks</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

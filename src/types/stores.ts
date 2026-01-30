@@ -1,11 +1,13 @@
-export interface UserInfo {
+export interface Workspace {
+  id: string;
   name: string;
-  email: string;
-  profileImage: string;
-  userName: string;
-}
-
-export interface UserStore extends UserInfo {
-  setUserInfo: (user: UserInfo) => void;
-  clearUser: () => void;
+  slug: string;
+  memberships: {
+    user: {
+      id: string;
+      email: string;
+      name: string | null;
+    };
+    role: "OWNER" | "ADMIN" | "MEMBER";
+  }[];
 }
