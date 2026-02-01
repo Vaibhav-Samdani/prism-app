@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { devtools, persist } from "zustand/middleware";
 
 type WorkspaceState = {
   activeWorkspaceId: string | null;
@@ -7,16 +7,21 @@ type WorkspaceState = {
 };
 
 export const useWorkspaceStore = create<WorkspaceState>()(
-  persist(
-    (set) => ({
-      activeWorkspaceId: null,
-      setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
-    }),
-    {
-      name: "workspace-store", // key in storage
-      partialize: (state) => ({
-        activeWorkspaceId: state.activeWorkspaceId
+  devtools(
+    persist(
+      (set) => ({
+        activeWorkspaceId: null,
+        setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
       }),
+      {
+        name: "workspace-store", // key in storage
+        partialize: (state) => ({
+          activeWorkspaceId: state.activeWorkspaceId
+        }),
+      },
+    ),
+    {
+      name: "AuthStore",
     },
   ),
 );

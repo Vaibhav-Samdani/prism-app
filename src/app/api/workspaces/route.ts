@@ -49,6 +49,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await requireUser();
 
+  console.log("Working!!");
+
   if (!user) {
     return NextResponse.json(
       { error: "Unauthorized", success: false, data: null },
@@ -90,8 +92,6 @@ export async function POST(req: Request) {
       ownerId: user.id,
     },
   });
-
-  console.log(workspace);
 
   return NextResponse.json(
     {

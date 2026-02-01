@@ -3,10 +3,11 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
 import { Separator } from "@/components/ui/separator";
+import React from "react";
 
 type Crumb = {
   label: string;
@@ -23,44 +24,47 @@ export default function DashboardHeader({
   rightSlot?: React.ReactNode;
 }) {
   return (
-    <div className="px-6 pt-6 pb-4">
-      {/* Breadcrumbs */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          {breadcrumbs.map((crumb, index) => (
-            <BreadcrumbItem key={index}>
-              {crumb.href ? (
-                <BreadcrumbLink href={crumb.href}>
-                  {crumb.label}
-                </BreadcrumbLink>
-              ) : (
-                <span className="text-muted-foreground">
-                  {crumb.label}
-                </span>
-              )}
+    <div className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur-md">
+      <div className="px-6 py-4">
+        {/* Breadcrumbs - High Legibility */}
+        <Breadcrumb>
+          <BreadcrumbList className="text-[13px] font-medium tracking-tight">
+            {breadcrumbs.map((crumb, index) => (
+              <React.Fragment key={index}>
+                <BreadcrumbItem>
+                  {crumb.href ? (
+                    <BreadcrumbLink 
+                      href={crumb.href}
+                      className="transition-colors hover:text-foreground/80"
+                    >
+                      {crumb.label}
+                    </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage className="text-foreground/60">
+                      {crumb.label}
+                    </BreadcrumbPage>
+                  )}
+                </BreadcrumbItem>
+                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="opacity-50" />}
+              </React.Fragment>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
 
-              {index < breadcrumbs.length - 1 && (
-                <BreadcrumbSeparator />
-              )}
-            </BreadcrumbItem>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
+        {/* Title + Actions */}
+        <div className="mt-3 flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground/90">
+            {title}
+          </h1>
 
-      {/* Title + Actions */}
-      <div className="mt-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">
-          {title}
-        </h1>
-
-        {rightSlot && (
-          <div className="flex items-center gap-2">
-            {rightSlot}
-          </div>
-        )}
+          {rightSlot && (
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-500">
+              {rightSlot}
+            </div>
+          )}
+        </div>
       </div>
-
-      <Separator className="mt-4" />
+      <Separator className="bg-border/40" />
     </div>
   );
 }

@@ -28,16 +28,16 @@ export default function DashboardPage() {
   return (
     <>
       <DashboardHeader
-        title="Dashboard"
+        title="Workspaces"
         breadcrumbs={[
-          { label: "Workspace", href: "/dashboard" },
-          { label: "Dashboard" },
+          { label: "Home", href: "/dashboard" },
+          { label: "Workspaces" },
         ]}
       />
 
-      <div className="p-6">
+      {/* <div className="p-6">
         <p className="text-muted-foreground">Welcome, {user?.name}.</p>
-      </div>
+      </div> */}
       {/* TODO: Make it Link */}
       <div className="p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

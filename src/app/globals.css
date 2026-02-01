@@ -61,7 +61,8 @@
   --popover-foreground: #f2f4f8;
 
   /* Brand */
-  --primary: #6b74e6;
+  /* --primary: #6b74e6; */
+  --primary: #4955f7;
   --primary-foreground: #ffffff;
 
   --secondary: #2a2f45;

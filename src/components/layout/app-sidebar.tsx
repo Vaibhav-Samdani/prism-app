@@ -14,9 +14,27 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-import { LayoutGrid, CheckSquare, Settings } from "lucide-react";
+import { LayoutGrid, CheckSquare, Settings, Building2 } from "lucide-react";
 import WorkspaceSwitcher from "./workspace-switcher";
 import Link from "next/link";
+
+const MIDDLE_DATA = [
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: <LayoutGrid />,
+  },
+  {
+    title: "Workspaces",
+    href: "/dashboard/workspaces",
+    icon: <Building2 />,
+  },
+  {
+    title: "My Tasks",
+    href: "/dashboard/tasks",
+    icon: <CheckSquare />,
+  },
+];
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -26,9 +44,7 @@ export default function AppSidebar() {
       {/* Header */}
       <SidebarHeader className="space-y-3">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">
-            Prism
-          </h1>
+          <h1 className="text-lg font-semibold tracking-tight">Prism</h1>
           <p className="text-xs text-muted-foreground">
             From complexity to clarity
           </p>
@@ -44,29 +60,16 @@ export default function AppSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === "/dashboard"}
-                >
-                  <a href="/dashboard">
-                    <LayoutGrid />
-                    <span>Dashboard</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname.startsWith("/dashboard/tasks")}
-                >
-                  <Link href="/dashboard/tasks">
-                    <CheckSquare />
-                    <span>My Tasks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {MIDDLE_DATA.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={pathname === item.href}>
+                    <a href={item.href}>
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

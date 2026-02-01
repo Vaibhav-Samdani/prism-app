@@ -29,8 +29,6 @@ export function useWorkspaces() {
       (query.data?.length === 0 || !query.data)
     ) {
       router.push("/dashboard/onboarding");
-    } else {
-      router.push("/dashboard");
     }
   }, [query.isFetched, query.isLoading, query.data, router]);
 

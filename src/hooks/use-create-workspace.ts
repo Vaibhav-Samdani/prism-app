@@ -14,7 +14,7 @@ const useCreateWorkspace = () => {
   const { mutate, isPending, isError } = useMutation({
     mutationFn: createWorkspace,
     onSuccess: (workspace) => {
-      console.log("--------------->", workspace);
+      console.log(workspace);
       setActiveWorkspaceId(workspace.data.id);
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       setName("");
@@ -23,7 +23,6 @@ const useCreateWorkspace = () => {
     onError: (error) => {
       console.log("error", error);
     },
-
   });
 
   const handleSubmit = (e: React.FormEvent) => {

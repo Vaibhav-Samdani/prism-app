@@ -2,7 +2,6 @@
 "use client";
 
 import { signIn } from "@/lib/auth-client";
-import { useAuthSession } from "./use-auth-session";
 
 export function useLogin() {
   const login =  async (redirect?: string) => {

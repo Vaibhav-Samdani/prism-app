@@ -18,26 +18,14 @@ import {
 } from "@/components/ui/command";
 import { useWorkspaces } from "@/hooks/use-workspaces";
 import { useWorkspaceStore } from "@/store/workspace-store";
-import { MorphingSquare } from "../ui/loader";
 import Link from "next/link";
 
 export default function WorkspaceSwitcher() {
-  const { workspaces } = useWorkspaces();
+  const { workspaces, isLoading } = useWorkspaces();
   const { activeWorkspaceId, setActiveWorkspaceId } = useWorkspaceStore();
   const [open, setOpen] = React.useState(false);
-   const [search, setSearch] = React.useState("");
 
   const current = workspaces?.find((w) => w.id === activeWorkspaceId);
-
-
-  // 🔑 Filter workspaces based on search
-  const filteredWorkspaces = React.useMemo(() => {
-    if (!search.trim()) return workspaces;
-
-    return workspaces.filter((workspace) =>
-      workspace.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search, workspaces]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -48,7 +36,9 @@ export default function WorkspaceSwitcher() {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {current?.name}
+          {" "}
+          {isLoading ? "Loading..." : current?.name}
+          {workspaces.length < 1 && !isLoading ? "No workspaces found." : null}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -62,7 +52,7 @@ export default function WorkspaceSwitcher() {
             {workspaces.map((workspace) => (
               <CommandItem
                 key={workspace.name}
-                value={workspace.name}
+                value={workspace.id}
                 onSelect={(currentValue) => {
                   setActiveWorkspaceId(currentValue);
                   setOpen(false);
