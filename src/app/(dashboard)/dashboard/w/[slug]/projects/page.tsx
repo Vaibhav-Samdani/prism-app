@@ -52,11 +52,11 @@ export default function WorkspacePage() {
       <div className="max-w-7xl mx-auto p-6 space-y-10">
         
         {/* Workspace Identity Card */}
-        <div className="group relative rounded-[2rem] border bg-card p-1 shadow-sm transition-all hover:shadow-xl hover:shadow-primary/5">
+        <div className="group relative rounded-4xl border bg-card p-1 shadow-sm transition-all hover:shadow-xl hover:shadow-primary/5">
           <div className="flex flex-col lg:flex-row gap-8 p-8">
             <div className="flex-1 space-y-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/60 text-2xl font-bold text-white shadow-inner">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-primary/60 text-2xl font-bold text-white shadow-inner">
                   AW
                 </div>
                 <div>

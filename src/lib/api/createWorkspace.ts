@@ -1,6 +1,12 @@
 import { toast } from "react-toastify";
 
-export default async function createWorkspace(name: string) {
+export default async function createWorkspace({
+  name,
+  description,
+}: {
+  name: string;
+  description?: string;
+}) {
   try {
     const res = await fetch("/api/workspace", {
       method: "POST",
@@ -10,6 +16,7 @@ export default async function createWorkspace(name: string) {
       },
       body: JSON.stringify({
         name: name,
+        description: description,
       }),
     });
 
@@ -23,10 +30,8 @@ export default async function createWorkspace(name: string) {
     console.log("Data ------->", data);
     return data;
   } catch (error) {
-
     console.log("Error creating workspace:", error);
 
     throw new Error("Error creating workspace!!");
-
   }
 }

@@ -12,11 +12,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 import { LayoutGrid, CheckSquare, Settings, Building2 } from "lucide-react";
 import WorkspaceSwitcher from "./workspace-switcher";
-import Link from "next/link";
 
 const MIDDLE_DATA = [
   {
@@ -38,6 +38,8 @@ const MIDDLE_DATA = [
 
 export default function AppSidebar() {
   const pathname = usePathname();
+
+  const { open } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">

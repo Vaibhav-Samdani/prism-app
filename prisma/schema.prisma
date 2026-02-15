@@ -142,6 +142,7 @@ model Project {
   name        String
   slug        String
   description String?
+  category    String?
   status      ProjectStatus @default(ACTIVE)
 
   workspaceId String

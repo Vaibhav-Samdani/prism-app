@@ -19,27 +19,43 @@ import {
 import { useWorkspaces } from "@/hooks/use-workspaces";
 import { useWorkspaceStore } from "@/store/workspace-store";
 import Link from "next/link";
+import { useSidebar } from "../ui/sidebar";
 
 export default function WorkspaceSwitcher() {
   const { workspaces, isLoading } = useWorkspaces();
   const { activeWorkspaceId, setActiveWorkspaceId } = useWorkspaceStore();
-  const [open, setOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const { open } = useSidebar();
 
   const current = workspaces?.find((w) => w.id === activeWorkspaceId);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="secondary"
           role="combobox"
-          aria-expanded={open}
+          aria-expanded={isOpen}
           className="w-full justify-between"
         >
-          {" "}
-          {isLoading ? "Loading..." : current?.name}
-          {workspaces.length < 1 && !isLoading ? "No workspaces found." : null}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {/* The Icon stays visible in both states */}
+          <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary self-start">
+            {current?.name?.charAt(0) || "W"}
+          </div>
+
+          {/* 🔑 The Logic: Only show text if expanded */}
+          {open && (
+            <div className="flex flex-col items-start text-left leading-tight">
+              <span className="truncate font-semibold">
+                {isLoading ? "Loading..." : current?.name}
+              </span>
+              {workspaces.length < 1 && !isLoading && (
+                <span className="text-[10px] text-muted-foreground">Empty</span>
+              )}
+            </div>
+          )}
+          {open && <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
         </Button>
       </PopoverTrigger>
 
@@ -55,7 +71,7 @@ export default function WorkspaceSwitcher() {
                 value={workspace.id}
                 onSelect={(currentValue) => {
                   setActiveWorkspaceId(currentValue);
-                  setOpen(false);
+                  setIsOpen(false);
                 }}
               >
                 <Check

@@ -1,10 +1,12 @@
 "use client";
 
 import DashboardHeader from "@/components/layout/dashboard-header";
+import { Button } from "@/components/ui/button";
 import { MorphingSquare } from "@/components/ui/loader";
 import { useWorkspaces } from "@/hooks/use-workspaces";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useWorkspaceStore } from "@/store/workspace-store";
+import { Plus, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -12,10 +14,6 @@ export default function DashboardPage() {
   const { workspaces, isLoading } = useWorkspaces();
 
   const { activeWorkspaceId } = useWorkspaceStore();
-
-  if (!user) {
-    return <div>Not logged in</div>;
-  }
 
   if (isLoading) {
     return (
@@ -33,6 +31,14 @@ export default function DashboardPage() {
           { label: "Home", href: "/dashboard" },
           { label: "Workspaces" },
         ]}
+        rightSlot={
+          <div className="flex items-center gap-2">
+            <Button size="sm" className="shadow-lg shadow-primary/20">
+              <Plus className="mr-1 h-4 w-4" />
+              <Link href="/dashboard/onboarding">Create workspace</Link>
+            </Button>
+          </div>
+        }
       />
 
       {/* <div className="p-6">
@@ -44,7 +50,7 @@ export default function DashboardPage() {
           {workspaces.map((workspace) => (
             <Link
               key={workspace.id}
-              href={`/dashboard/workspaces/${workspace.slug}`}
+              href={`/dashboard/w/${workspace.slug}`}
               className="group relative rounded-xl border bg-background shadow-sm hover:shadow-md transition-all duration-200"
             >
               {/* Top cover */}

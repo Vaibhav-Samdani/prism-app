@@ -7,6 +7,7 @@ import React, { useState } from "react";
 const useCreateWorkspace = () => {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const queryClient = useQueryClient();
 
   const { setActiveWorkspaceId } = useWorkspaceStore();
@@ -14,10 +15,10 @@ const useCreateWorkspace = () => {
   const { mutate, isPending, isError } = useMutation({
     mutationFn: createWorkspace,
     onSuccess: (workspace) => {
-      console.log(workspace);
       setActiveWorkspaceId(workspace.data.id);
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       setName("");
+      setDescription("");
       router.push("/dashboard");
     },
     onError: (error) => {
@@ -29,7 +30,9 @@ const useCreateWorkspace = () => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    mutate(name.trim());
+    console.log(name,description);
+
+    mutate({ name: name.trim(), description });
   };
 
   return {
@@ -38,6 +41,8 @@ const useCreateWorkspace = () => {
     handleSubmit,
     isPending,
     isError,
+    description,
+    setDescription,
   };
 };
 

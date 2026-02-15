@@ -1,16 +1,16 @@
-import React from "react";
+"use client";
 import Link from "next/link";
-import { 
-  Plus, 
-  Search, 
-  Users, 
-  LayoutGrid, 
-  List, 
-  Settings, 
-  MoreHorizontal, 
+import {
+  Plus,
+  Search,
+  Users,
+  LayoutGrid,
+  List,
+  Settings,
+  MoreHorizontal,
   ArrowUpRight,
   Clock,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 
 import DashboardHeader from "@/components/layout/dashboard-header";
@@ -35,6 +35,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useWorkspaceData } from "@/hooks/use-workspace-data";
+import { MorphingSquare } from "@/components/ui/loader";
+import { useParams } from "next/navigation";
+import RichTextViewer from "@/components/ui/rich-text-viewer";
+import ExpandableRichText from "@/components/ui/expandable-rich-text-viewer";
 
 const PROJECTS = [
   {
@@ -70,14 +75,27 @@ const PROJECTS = [
 ];
 
 export default function WorkspacePage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const { workspace, stats, isLoading } = useWorkspaceData(slug);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-full items-center justify-center">
+        <MorphingSquare message="Loading..." />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background/50">
       <DashboardHeader
-        title="Acme Workspace"
+        title={workspace.name || ""}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Workspaces", href: "/dashboard/workspaces" },
-          { label: "Acme Workspace" },
+          { label: workspace.name || "" },
         ]}
         rightSlot={
           <div className="flex items-center gap-2">
@@ -94,37 +112,45 @@ export default function WorkspacePage() {
       />
 
       <main className="container max-w-7xl mx-auto p-6 space-y-8">
-        
         {/* Hero Section: Workspace Identity */}
         <section className="relative overflow-hidden rounded-2xl border bg-linear-to-b from-muted/50 to-background p-8">
           <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-xl">
-                  A
+                  {workspace?.name?.charAt(0).toUpperCase() || "P"}
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Acme Global</h1>
+                  <h1 className="text-2xl font-bold tracking-tight">
+                    {workspace.name || ""}
+                  </h1>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="rounded-full px-2.5">Owner</Badge>
+                    <Badge variant="secondary" className="rounded-full px-2.5">
+                      {workspace?.memberships[0]?.role}
+                      {/* TODO: Update this as per the data as match the user id with membership id and then show the badge. */}
+                    </Badge>
                     <div className="flex items-center text-xs text-muted-foreground">
-                      <Clock className="mr-1 h-3.3 w-3.3" />
+                      <Clock className="mr-1 h-4 w-4" />
                       Updated 2 mins ago
                     </div>
                   </div>
                 </div>
               </div>
-              <p className="max-w-xl text-muted-foreground leading-relaxed">
-                Central hub for the engineering and design teams. Use this space to track 
-                sprints, manage deployments, and collaborate on cross-functional initiatives.
-              </p>
+              <div className="max-w-xl text-muted-foreground leading-relaxed">
+                <ExpandableRichText content={workspace.description || " "} />
+              </div>
             </div>
 
             <div className="flex flex-col items-start md:items-end gap-3">
               <div className="flex -space-x-3">
                 {["A", "R", "S", "M", "K"].map((c, i) => (
-                  <Avatar key={i} className="h-10 w-10 border-4 border-background shadow-sm">
-                    <AvatarFallback className="bg-muted text-xs font-semibold">{c}</AvatarFallback>
+                  <Avatar
+                    key={i}
+                    className="h-10 w-10 border-4 border-background shadow-sm"
+                  >
+                    <AvatarFallback className="bg-muted text-xs font-semibold">
+                      {c}
+                    </AvatarFallback>
                   </Avatar>
                 ))}
                 <div className="h-10 w-10 rounded-full bg-muted border-4 border-background flex items-center justify-center text-[10px] font-bold">
@@ -137,7 +163,7 @@ export default function WorkspacePage() {
               </Button>
             </div>
           </div>
-          
+
           {/* Decorative background element */}
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/5 blur-[120px]" />
         </section>
@@ -145,14 +171,31 @@ export default function WorkspacePage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { label: "Active Projects", value: "12", icon: LayoutGrid, color: "text-blue-500" },
-            { label: "Tasks Completed", value: "128", icon: CheckCircle2, color: "text-emerald-500" },
-            { label: "Team Velocity", value: "94%", icon: ArrowUpRight, color: "text-orange-500" },
+            {
+              label: "Active Projects",
+              value: stats.active,
+              icon: LayoutGrid,
+              color: "text-blue-500",
+            },
+            {
+              label: "Tasks Completed",
+              value: stats.task_completed_this_week,
+              icon: CheckCircle2,
+              color: "text-emerald-500",
+            },
+            {
+              label: "Team Velocity",
+              value: `${stats.team_velocity}%`,
+              icon: ArrowUpRight,
+              color: "text-orange-500",
+            },
           ].map((stat, i) => (
             <Card key={i} className="bg-card/50 backdrop-blur-sm">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {stat.label}
+                  </p>
                   <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
                 </div>
                 <div className={`p-3 rounded-xl bg-muted ${stat.color}`}>
@@ -171,15 +214,22 @@ export default function WorkspacePage() {
             <div className="flex items-center gap-4 flex-1 max-w-md">
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search projects..." className="pl-9 bg-background" />
+                <Input
+                  placeholder="Search projects..."
+                  className="pl-9 bg-background"
+                />
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <Tabs defaultValue="grid" className="w-fit">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="grid"><LayoutGrid className="h-4 w-4" /></TabsTrigger>
-                  <TabsTrigger value="list"><List className="h-4 w-4" /></TabsTrigger>
+                  <TabsTrigger value="grid">
+                    <LayoutGrid className="h-4 w-4" />
+                  </TabsTrigger>
+                  <TabsTrigger value="list">
+                    <List className="h-4 w-4" />
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
               <Button variant="outline">Filters</Button>
@@ -187,44 +237,62 @@ export default function WorkspacePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PROJECTS.map((project) => (
-              <Link key={project.id} href={`/dashboard/projects/${project.id}`} className="group">
+            {workspace.projects.map((project) => (
+              <Link
+                key={project.id}
+                href={`/dashboard/projects/${project.id}`}
+                className="group"
+              >
                 <Card className="h-full transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/5 group-hover:-translate-y-0.5 border-primary/2  hover:border-indigo-500 overflow-hidden relative">
                   {/* <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" /> */}
-                  
+
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
-                      <Badge variant="outline" className="bg-primary/5 text-primary border-none font-medium">
+                      <Badge
+                        variant="outline"
+                        className="bg-primary/5 text-primary border-none font-medium"
+                      >
                         {project.category}
                       </Badge>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>Edit Project</DropdownMenuItem>
                           <DropdownMenuItem>Archive</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                    <CardTitle className="text-2xl group-hover:text-primary transition-colors">
                       {project.name}
                     </CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {project.description}
+                    <CardDescription className="line-clamp-2 ">
+                      <RichTextViewer
+                        className="prose prose-invert prose-sm max-w-none text-muted-foreground prose-h1:text-lg prose-h1:text-muted-foreground prose-h1:font-semibold prose-h2:text-muted-foreground prose-h1:mb-2 prose-h3:text-muted-foreground prose-p:my-2 prose-p:text-muted-foreground selection:bg-purple-300"
+                        content={project.description || ""}
+                      />
                     </CardDescription>
                   </CardHeader>
 
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground font-medium">Progress</span>
-                        <span className="font-bold">{project.progress}%</span>
+                        <span className="text-muted-foreground font-medium">
+                          Progress
+                        </span>
+                        <span className="font-bold">{50}%</span>
                       </div>
-                      <Progress value={project.progress} className="h-1.5" />
+                      <Progress value={50} className="h-1.5" />
                     </div>
                   </CardContent>
 
@@ -232,14 +300,17 @@ export default function WorkspacePage() {
                     <div className="flex items-center gap-3">
                       <span className="flex items-center">
                         <CheckCircle2 className="mr-1 h-3.5 w-3.5 text-emerald-500" />
-                        {project.tasks}
+                        {20}
                       </span>
                       <div className="flex -space-x-2">
-                        {project.members.map((m, i) => (
-                          <div key={i} className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px] font-bold">
+                        {/* {PROJECTS.members.map((m, i) => (
+                          <div
+                            key={i}
+                            className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px] font-bold"
+                          >
                             {m}
                           </div>
-                        ))}
+                        ))} */}
                       </div>
                     </div>
                     <span className="text-xs uppercase tracking-wider font-semibold">
@@ -249,7 +320,7 @@ export default function WorkspacePage() {
                 </Card>
               </Link>
             ))}
-            
+
             {/* Empty State / Quick Add Card */}
             <button className="h-full min-h-55 rounded-xl border-2 border-dashed border-muted hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group">
               <div className="p-3 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
