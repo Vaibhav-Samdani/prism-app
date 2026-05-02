@@ -34,8 +34,10 @@ export default function DashboardPage() {
         rightSlot={
           <div className="flex items-center gap-2">
             <Button size="sm" className="shadow-lg shadow-primary/20">
-              <Plus className="mr-1 h-4 w-4" />
-              <Link href="/dashboard/onboarding">Create workspace</Link>
+              <Link href="/dashboard/onboarding" className="flex"> 
+                <Plus className="mr-1 h-4 w-4" />
+                Create workspace
+              </Link>
             </Button>
           </div>
         }

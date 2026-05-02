@@ -8,7 +8,7 @@ const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     <div>
       {children}
       <ToastContainer
-        position="top-right"
+        position="bottom-right"
         autoClose={2000}
         hideProgressBar={false}
         newestOnTop

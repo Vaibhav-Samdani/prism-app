@@ -110,3 +110,16 @@ export function buildWorkspaceWhere(
 
   throw new Error("Workspace id or slug required");
 }
+
+export function formatDateTime(date: string | Date) {
+  const d = new Date(date);
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(d);
+}

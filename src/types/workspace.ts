@@ -5,7 +5,7 @@ export interface Project {
   name: string;
   slug: string;
   description: string | null;
-  category: string | null;
+  category: string[] | null;
   status: "ACTIVE" | "ARCHIVED";
   createdAt: string;
   updatedAt: string;
@@ -27,6 +27,7 @@ export type WorkspaceResponse = {
     workspace: Workspace;
     stats: WorkspaceStats;
   };
+  error?: string; 
 };
 
 export interface Workspace {
@@ -38,7 +39,7 @@ export interface Workspace {
   createdAt: string;
   updatedAt: string;
 
-  role: WorkspaceRole;
+  currentUserRole: WorkspaceRole;
 
   memberships: WorkspaceMembership[];
   projects: Project[];

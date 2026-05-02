@@ -50,7 +50,7 @@ export default function OnboardingPage() {
             <RichTextEditor
               value={description}
               onChange={setDescription}
-              className="text-white "
+              className="text-white"
             />
           </div>
 

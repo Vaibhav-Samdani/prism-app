@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchSingleWorkspace } from "@/lib/api/workspaces";
 import { useEffect } from "react";
-import { Workspace, WorkspaceResponse, WorkspaceStats } from "@/types/workspace";
+import { WorkspaceResponse } from "@/types/workspace";
 
 export function useWorkspaceData(slug?: string) {
 
@@ -15,9 +15,9 @@ export function useWorkspaceData(slug?: string) {
   });
 
   useEffect(() => {
-    console.log("--------------->",query);
-    console.log("--------------->",query.data?.data.workspace);
-  });
+    console.log("1. --------------->",query);
+    console.log("2. --------------->",query.data?.data.workspace);
+  },[query.data]);
 
 //   useEffect(() => {
 //     if (query.isFetched && !query.isLoading && !query.data) {
@@ -26,10 +26,11 @@ export function useWorkspaceData(slug?: string) {
 //   }, [query.isFetched, query.isLoading, query.data, router]);
 
   return {
-    workspace: query.data?.data.workspace ?? {} as Workspace,
-    stats: query.data?.data.stats ?? {} as WorkspaceStats,
+    workspace: query.data?.data.workspace,
+    stats: query.data?.data.stats,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
+    errorMessage: query.data?.error,
   };
 }

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { 
   Plus, 
   Search, 
-  Settings, 
   MoreHorizontal, 
   Activity,
   Zap,
@@ -24,12 +23,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export default function WorkspacePage() {
   return (
