@@ -1,4 +1,5 @@
 "use client";
+import { MorphingSquare } from "@/components/ui/loader";
 import { useSession } from "@/lib/auth-client";
 import { useEffect } from "react";
 
@@ -12,7 +13,7 @@ export default function Home() {
   if (isRefetching || isPending) {
     return (
       <div className="flex flex-col min-h-screen items-center justify-center bg-background">
-        Loading...
+        <MorphingSquare message="Loading..." />
       </div>
     );
   }

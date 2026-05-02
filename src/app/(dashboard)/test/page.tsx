@@ -1,42 +1,47 @@
 "use client";
+
 import { ToastContainer, toast } from "react-toastify";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import RichTextViewer from "@/components/ui/rich-text-viewer";
 
 export default function DashboardPage() {
+  const [desc, setDesc] = useState("");
   useEffect(() => {
-    const createWorkspace = async () => {
+    const fetchWorkspace = async () => {
       try {
-        const res = await fetch("/api/workspaces", {
-          method: "POST",
+        const id = "902e8ed8-4c90-42de-bf06-741e28829e85"; // be4bf979-79dc-4fbc-ac2c-070a5978ad6f
+        const slug = "testing"; // vaibhav-samdani
+
+        const res = await fetch(`/api/workspace?id=${id}&slug=${slug}`, {
+          method: "GET",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: "My First Workspace.",
-          }),
         });
 
         const data = await res.json();
+
         if (!res.ok) {
-          toast.error(data.error);
+          toast.error(data.error || "Failed to fetch workspace");
           console.log(res);
         } else {
-          toast.success("Workspace created successfully");
-          console.log("Workspace created:", data);
+          toast.success("Workspace fetched successfully");
+          console.log("Workspace data:", data);
         }
+
+        setDesc(data.data.workspace.description);
       } catch (error) {
-        console.error("Error creating workspace:", error);
+        console.error("Error fetching workspace:", error);
+        toast.error("Something went wrong");
       }
     };
 
-    createWorkspace();
+    fetchWorkspace();
   }, []);
 
   return (
-    <div className="p-6">
+    <div className="p-6 text-white">
       Dashboard
       <ToastContainer />
+      <RichTextViewer content={desc}   />
     </div>
   );
 }

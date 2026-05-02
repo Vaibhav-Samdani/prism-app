@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 /* --------------------------------------------------
    Tailwind v4 Theme Mapping
@@ -61,7 +62,8 @@
   --popover-foreground: #f2f4f8;
 
   /* Brand */
-  --primary: #6b74e6;
+  /* --primary: #6b74e6; */
+  --primary: #4955f7;
   --primary-foreground: #ffffff;
 
   --secondary: #2a2f45;
@@ -96,6 +98,8 @@
   --sidebar-primary-foreground: #ffffff;
 
   --sidebar-border: rgba(255, 255, 255, 0.08);
+
+  --tw-prose-headings: #f2f4f8;
 }
 
 /* --------------------------------------------------
@@ -123,5 +127,56 @@
   }
   .corner-squircle {
     corner-shape: squircle;
+  }
+
+  .ProseMirror pre {
+    background: hsl(var(--muted));
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.875rem;
+    overflow-x: auto;
+  }
+
+  .ProseMirror code {
+    background: hsl(var(--muted));
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  .tiptap.prose {
+    @apply max-w-none focus:outline-none min-h-37.5 outline-none;
+  }
+
+  /* Placeholder styling */
+  .tiptap p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground float-left h-0 pointer-events-none;
+    content: attr(data-placeholder);
+  }
+
+  .prose
+    :where(h1, h2, h3, h4):not(
+      :where([class~="not-prose"], [class~="not-prose"] *)
+    ) {
+    color: var(--foreground); /* Use your theme variable */
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .prose :where(h1, h2, h3):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+    /* Now that the color is fixed via the variable, let's refine the feel */
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+
+  /* Support for dark mode specifically */
+  .dark .prose :where(h1, h2, h3, h4) {
+    color: #f8fafc; /* slate-50 or your primary light color */
+  }
+
+  /* Fix for the yellow highlight seen in your screenshot */
+  .prose mark {
+    @apply bg-yellow-400 text-black rounded-sm px-1;
   }
 }

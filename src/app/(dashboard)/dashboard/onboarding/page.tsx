@@ -1,15 +1,22 @@
 "use client";
 
-
 import useCreateWorkspace from "@/hooks/use-create-workspace";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 
 export default function OnboardingPage() {
-  const { name, setName, handleSubmit, isPending, isError } =
-    useCreateWorkspace();
+  const {
+    name,
+    setName,
+    description,
+    setDescription,
+    handleSubmit,
+    isPending,
+    isError,
+  } = useCreateWorkspace();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40">
-      <div className="w-full max-w-md rounded-xl border bg-background p-6 shadow-sm">
+      <div className="w-full max-w-3xl rounded-xl border bg-background p-6 shadow-sm">
         <h1 className="text-2xl font-semibold tracking-tight">
           Create your workspace
         </h1>
@@ -19,8 +26,9 @@ export default function OnboardingPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {/* Name */}
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-2">
               Workspace name
             </label>
             <input
@@ -30,6 +38,19 @@ export default function OnboardingPage() {
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               autoFocus
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Description <span className="text-muted-foreground">(optional)</span>
+            </label>
+
+            <RichTextEditor
+              value={description}
+              onChange={setDescription}
+              className="text-white"
             />
           </div>
 

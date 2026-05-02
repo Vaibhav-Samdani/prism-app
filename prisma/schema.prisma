@@ -1,9 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// ==========================
+// Generator & Datasource
+// ==========================
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -13,24 +10,64 @@ datasource db {
   provider = "postgresql"
 }
 
+// ==========================
+// Enums
+// ==========================
 enum WorkspaceRole {
   OWNER
   ADMIN
   MEMBER
 }
 
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TaskStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ==========================
+// User & Auth Models
+// ==========================
 model User {
-  id            String            @id @default(uuid())
-  email         String            @unique
+  id            String  @id @default(uuid())
+  email         String  @unique
   name          String?
   profileImage  String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  emailVerified Boolean           @default(false)
+  emailVerified Boolean @default(false)
   image         String?
-  sessions      Session[]
-  accounts      Account[]
-  memberships   WorkspaceMember[]
+
+  sentInvitations WorkspaceInvitation[]
+  memberships     WorkspaceMember[]
+  projects        Project[]             @relation("ProjectCreator")
+
+  // Task Relations
+  assignedTasks Task[] @relation("TaskAssignee")
+  createdTasks  Task[] @relation("TaskCreator")
+
+  // Feature Relations
+  comments    Comment[]
+  attachments Attachment[]
+
+  sessions Session[]
+  accounts Account[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("user")
 }
@@ -43,8 +80,9 @@ model Session {
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@index([userId])
@@ -52,11 +90,13 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String @id
+  accountId  String
+  providerId String
+  userId     String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -64,8 +104,9 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("account")
@@ -76,21 +117,31 @@ model Verification {
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([identifier])
   @@map("verification")
 }
 
+// ==========================
+// Workspace Models
+// ==========================
 model Workspace {
-  id          String            @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
-  slug        String            @unique
+  slug        String  @unique
   ownerId     String
+  description String?
+
   memberships WorkspaceMember[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  projects    Project[]
+  invitations WorkspaceInvitation[]
+  tasks       Task[] // Global Workspace Tasks
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model WorkspaceMember {
@@ -108,4 +159,139 @@ model WorkspaceMember {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+model WorkspaceInvitation {
+  id          String        @id @default(uuid())
+  email       String
+  workspaceId String
+  role        WorkspaceRole @default(MEMBER)
+  token       String        @unique
+  expiresAt   DateTime
+  inviterId   String
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviter   User      @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([workspaceId, email])
+  @@index([token])
+}
+
+// ==========================
+// Project Model
+// ==========================
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String
+  description String?       @db.Text
+  category    String[]      @default([])
+  status      ProjectStatus @default(ACTIVE)
+
+  workspaceId String
+  createdById String
+
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy   User         @relation("ProjectCreator", fields: [createdById], references: [id])
+  tasks       Task[]
+  comments    Comment[]
+  attachments Attachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId])
+}
+
+// ==========================
+// Task Model
+// ==========================
+model Task {
+  id          String       @id @default(uuid())
+  title       String
+  description String?      @db.Text
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  position    Int          @default(0) // For Kanban ordering
+
+  // Hierarchy Relations
+  projectId   String
+  workspaceId String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Subtasks (Self-relation)
+  parentId   String?
+  parentTask Task?   @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks   Task[]  @relation("Subtasks")
+
+  // User Relations
+  assigneeId String?
+  creatorId  String
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  creator    User    @relation("TaskCreator", fields: [creatorId], references: [id])
+
+  // Feature Relations
+  comments    Comment[]
+  attachments Attachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([parentId])
+}
+
+// ==========================
+// Feature Models (New)
+// ==========================
+model Comment {
+  id      String @id @default(uuid())
+  content String @db.Text
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([projectId])
+  @@index([taskId])
+}
+
+model Attachment {
+  id       String @id @default(uuid())
+  name     String
+  url      String // Storage URL
+  fileType String
+  size     Int
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedById])
+  @@index([projectId])
+  @@index([taskId])
 }

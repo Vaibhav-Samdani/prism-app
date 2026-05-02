@@ -1,6 +1,5 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/app-sidebar";
-import Hydrated from "@/components/auth/hydrated";
 
 export default function DashboardLayout({
   children,

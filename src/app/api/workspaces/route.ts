@@ -1,6 +1,6 @@
 import prisma from "@/lib/db";
 import { requireUser } from "@/lib/db/users";
-import { slugify } from "@/lib/utils";
+import { buildSlug } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -14,6 +14,10 @@ export async function GET() {
   }
 
   const workspaces = await prisma.workspace.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+
     where: {
       memberships: {
         some: {
@@ -25,6 +29,10 @@ export async function GET() {
       id: true,
       name: true,
       slug: true,
+      description: true,
+      ownerId: true,
+      createdAt: true,
+      updatedAt: true,
       memberships: {
         where: { userId: user.id },
         select: {
@@ -49,6 +57,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await requireUser();
 
+  console.log("Working!!");
+
   if (!user) {
     return NextResponse.json(
       { error: "Unauthorized", success: false, data: null },
@@ -58,7 +68,7 @@ export async function POST(req: Request) {
 
   const { name } = await req.json();
 
-  const slug = slugify(name);
+  const slug = buildSlug(name);
 
   console.log(slug);
 
@@ -90,8 +100,6 @@ export async function POST(req: Request) {
       ownerId: user.id,
     },
   });
-
-  console.log(workspace);
 
   return NextResponse.json(
     {

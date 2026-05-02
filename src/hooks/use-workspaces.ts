@@ -1,9 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchWorkspaces } from "@/lib/api/workspaces";
 import { useEffect } from "react";
 import { useWorkspaceStore } from "@/store/workspace-store";
 import { useRouter } from "next/navigation";
-import { Workspace } from "@/types/stores";
+import { Workspace } from "@/types/workspace";
 
 export function useWorkspaces() {
   const router = useRouter();
@@ -29,8 +29,6 @@ export function useWorkspaces() {
       (query.data?.length === 0 || !query.data)
     ) {
       router.push("/dashboard/onboarding");
-    } else {
-      router.push("/dashboard");
     }
   }, [query.isFetched, query.isLoading, query.data, router]);
 
@@ -42,4 +40,41 @@ export function useWorkspaces() {
     activeWorkspaceId,
     setActiveWorkspaceId,
   };
+}
+
+
+
+
+// --- TASK HOOKS ---
+
+export function useTasks(workspaceId: string, projectId: string) {
+  return useQuery({
+    queryKey: ["tasks", projectId],
+    queryFn: async () => {
+      const res = await fetch(`/api/workspaces/${workspaceId}/projects/${projectId}/tasks`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+      return json.data;
+    },
+    enabled: !!workspaceId && !!projectId,
+  });
+}
+
+export function useCreateTask(workspaceId: string, projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch(`/api/workspaces/${workspaceId}/projects/${projectId}/tasks`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+      return json.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["global-dashboard"] });
+    },
+  });
 }
