@@ -279,7 +279,7 @@ export default function WorkspacePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {workspace?.projects
               ? workspace.projects.map((project) => (
-                <>
+                <div key={project.id} className="h-full">
                   <Link
                     key={project.id}
                     href={`/w/${slug}/p/${project.id}`}
@@ -351,7 +351,7 @@ export default function WorkspacePage() {
                     </Card>
                   </Link>
                  
-                  </>
+                  </div>
                 ))
               : null}
 
