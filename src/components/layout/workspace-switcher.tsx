@@ -16,51 +16,69 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-
-const WORKSPACES = [
-  { id: "1", name: "Personal" },
-  { id: "2", name: "College Project" },
-  { id: "3", name: "Startup Idea" },
-];
+import { useWorkspaces } from "@/hooks/use-workspaces";
+import { useWorkspaceStore } from "@/store/workspace-store";
+import Link from "next/link";
+import { useSidebar } from "../ui/sidebar";
 
 export default function WorkspaceSwitcher() {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(WORKSPACES[0].id);
+  const { workspaces, isLoading } = useWorkspaces();
+  const { activeWorkspaceId, setActiveWorkspaceId } = useWorkspaceStore();
+  const [isOpen, setIsOpen] = React.useState(false);
 
-  const current = WORKSPACES.find((w) => w.id === value);
+  const { open } = useSidebar();
+
+  const current = workspaces?.find((w) => w.id === activeWorkspaceId);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="secondary"
           role="combobox"
-          aria-expanded={open}
+          aria-expanded={isOpen}
           className="w-full justify-between"
         >
-          {current?.name}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          {/* The Icon stays visible in both states */}
+          <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary self-start">
+            {current?.name?.charAt(0) || "W"}
+          </div>
+
+          {/* 🔑 The Logic: Only show text if expanded */}
+          {open && (
+            <div className="flex flex-col items-start text-left leading-tight">
+              <span className="truncate font-semibold">
+                {isLoading ? "Loading..." : current?.name}
+              </span>
+              {workspaces.length < 1 && !isLoading && (
+                <span className="text-[10px] text-muted-foreground">Empty</span>
+              )}
+            </div>
+          )}
+          {open && <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[240px] p-0">
+      <PopoverContent className="w-60 p-0">
         <Command>
           <CommandInput placeholder="Switch workspace..." />
           <CommandEmpty>No workspace found.</CommandEmpty>
 
           <CommandGroup>
-            {WORKSPACES.map((workspace) => (
+            {workspaces.map((workspace) => (
               <CommandItem
-                key={workspace.id}
+                key={workspace.name}
                 value={workspace.id}
                 onSelect={(currentValue) => {
-                  setValue(currentValue);
-                  setOpen(false);
+                  setActiveWorkspaceId(currentValue);
+                  setIsOpen(false);
                 }}
               >
                 <Check
                   className={`mr-2 h-4 w-4 ${
-                    value === workspace.id ? "opacity-100" : "opacity-0"
+                    activeWorkspaceId === workspace.id
+                      ? "opacity-100"
+                      : "opacity-0"
                   }`}
                 />
                 {workspace.name}
@@ -70,7 +88,7 @@ export default function WorkspaceSwitcher() {
 
           <CommandGroup>
             <CommandItem className="text-primary">
-              + Create workspace
+              <Link href="/dashboard/onboarding">+ Create workspace</Link>
             </CommandItem>
           </CommandGroup>
         </Command>
