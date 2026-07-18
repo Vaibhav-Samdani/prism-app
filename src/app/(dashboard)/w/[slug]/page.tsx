@@ -16,6 +16,13 @@ import {
   Activity,
   Zap,
 } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 import DashboardHeader from "@/components/layout/dashboard-header";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +49,60 @@ import ExpandableRichText from "@/components/ui/expandable-rich-text-viewer";
 import { formatDateTime } from "@/lib/utils";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { ProjectOptionsMenu } from "@/components/projects/project-options-menu";
+import { useState } from "react";
+
+
+
+function ProjectCard({ project, slug, workspaceId }: { project: any, slug: string, workspaceId: string }) {
+  return (
+    <Link href={`/w/${slug}/p/${project.id}`} className="group h-full">
+      <Card className="h-full transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/5 border-primary/20 hover:border-indigo-500 overflow-hidden relative">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center justify-start gap-1">
+              {project.category?.map((category: string, i: number) => (
+                <Badge key={i} variant="outline" className="bg-primary/5 text-primary border-none font-medium">
+                  {category}
+                </Badge>
+              ))}
+            </div>
+            <ProjectOptionsMenu workspaceId={workspaceId} project={project} />
+          </div>
+          <CardTitle className="text-xl group-hover:text-primary transition-colors mt-2">
+            {project.name}
+          </CardTitle>
+          <CardDescription className="line-clamp-2">
+            <RichTextViewer
+              className="prose prose-invert prose-sm max-w-none text-muted-foreground prose-h1:text-lg prose-p:my-2"
+              content={project.description || ""}
+            />
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground font-medium">Progress</span>
+              <span className="font-bold">50%</span>
+            </div>
+            <Progress value={50} className="h-1.5" />
+          </div>
+        </CardContent>
+        <CardFooter className="pt-0 flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center">
+            <CheckCircle2 className="mr-1 h-3.5 w-3.5 text-emerald-500" />
+            <span>20 tasks</span>
+          </div>
+          <span className="text-xs uppercase tracking-wider font-semibold">
+            {formatDateTime(project.updatedAt)}
+          </span>
+        </CardFooter>
+      </Card>
+    </Link>
+  );
+}
+
+
+
 
 export default function WorkspacePage() {
   const params = useParams();
@@ -54,6 +115,22 @@ export default function WorkspacePage() {
   const displayCount = 5;
   const visibleMembers = memberships.slice(0, displayCount);
   const remainingCount = memberships.length - displayCount;
+
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  // 2. Derive unique categories dynamically from your projects
+  const allCategories = Array.from(
+    new Set(workspace?.projects.flatMap((p) => p.category || []))
+  );
+
+
+  const filteredProjects = workspace?.projects.filter((project) => {
+    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || project.category?.includes(selectedCategory);
+    return matchesSearch && matchesCategory;
+  }) || [];
 
   if (isLoading) {
     return (
@@ -250,127 +327,88 @@ export default function WorkspacePage() {
 
         {/* Project Browser */}
         <section className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-1 max-w-md">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search projects..."
-                  className="pl-9 bg-background"
-                />
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="flex items-center gap-4 flex-1 max-w-md">
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search projects..."
+          className="pl-9 bg-background"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+    </div>
+
+    <div className="flex items-center gap-3">
+      {/* Category Filter */}
+      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+        <SelectTrigger className="w-[140px]">
+          <SelectValue placeholder="Category" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="All">All Categories</SelectItem>
+          {allCategories.map((cat) => (
+            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* View Toggle */}
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'list')} className="w-fit">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="grid"><LayoutGrid className="h-4 w-4" /></TabsTrigger>
+          <TabsTrigger value="list"><List className="h-4 w-4" /></TabsTrigger>
+        </TabsList>
+      </Tabs>
+    </div>
+  </div>
+
+  {/* Render based on View Mode */}
+  {filteredProjects.length > 0 ? (
+    viewMode === 'grid' ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredProjects.map((project) => (
+           /* ... [Your existing Card Grid Code] ... */
+           <ProjectCard 
+      key={project.id} 
+      project={project} 
+      slug={slug} 
+      workspaceId={workspace.id} 
+    />
+        ))}
+      </div>
+    ) : (
+      <div className="border rounded-xl bg-card overflow-hidden">
+        {filteredProjects.map((project) => (
+          <Link 
+            key={project.id} 
+            href={`/w/${slug}/p/${project.id}`}
+            className="flex items-center justify-between p-4 hover:bg-muted/50 border-b last:border-0 transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary">
+                {project.name.charAt(0)}
+              </div>
+              <div>
+                <p className="font-medium text-sm">{project.name}</p>
+                <p className="text-xs text-muted-foreground">{project.category?.join(', ')}</p>
               </div>
             </div>
-
-            <div className="flex items-center gap-3">
-              <Tabs defaultValue="grid" className="w-fit">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="grid">
-                    <LayoutGrid className="h-4 w-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="list">
-                    <List className="h-4 w-4" />
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <Button variant="outline">Filters</Button>
+            <div className="text-xs text-muted-foreground">
+              Updated {formatDateTime(project.updatedAt)}
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {workspace?.projects
-              ? workspace.projects.map((project) => (
-                <div key={project.id} className="h-full">
-                  <Link
-                    key={project.id}
-                    href={`/w/${slug}/p/${project.id}`}
-                    className="group"
-                  >
-                    <Card className="h-full transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/5 group-hover:-translate-y-0.5 border-primary/2  hover:border-indigo-500 overflow-hidden relative">
-                      {/* <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" /> */}
-
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center justify-start gap-1">
-                            {project.category?.map((category, i) => (
-                              <Badge
-                                key={i}
-                                variant="outline"
-                                className="bg-primary/5 text-primary border-none font-medium"
-                              >
-                                {category}
-                              </Badge>
-                            ))}
-                          </div>
-                          <ProjectOptionsMenu workspaceId={workspace.id} project={project} />
-
-                        </div>
-                        <CardTitle className="text-2xl group-hover:text-primary transition-colors">
-                          {project.name}
-                        </CardTitle>
-                        <CardDescription className="line-clamp-2 ">
-                          <RichTextViewer
-                            className="prose prose-invert prose-sm max-w-none text-muted-foreground prose-h1:text-lg prose-h1:text-muted-foreground prose-h1:font-semibold prose-h2:text-muted-foreground prose-h1:mb-2 prose-h3:text-muted-foreground prose-p:my-2 prose-p:text-muted-foreground selection:bg-purple-300"
-                            content={project.description || ""}
-                          />
-                        </CardDescription>
-                      </CardHeader>
-
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground font-medium">
-                              Progress
-                            </span>
-                            <span className="font-bold">{50}%</span>
-                          </div>
-                          <Progress value={50} className="h-1.5" />
-                        </div>
-                      </CardContent>
-
-                      <CardFooter className="pt-0 flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center">
-                            <CheckCircle2 className="mr-1 h-3.5 w-3.5 text-emerald-500" />
-                            {20}
-                          </span>
-                          <div className="flex -space-x-2">
-                            {/* {PROJECTS.members.map((m, i) => (
-                          <div
-                            key={i}
-                            className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px] font-bold"
-                          >
-                            {m}
-                          </div>
-                        ))} */}
-                          </div>
-                        </div>
-                        <span className="text-xs uppercase tracking-wider font-semibold">
-                          {formatDateTime(project.updatedAt)}
-                        </span>
-                      </CardFooter>
-                    </Card>
-                  </Link>
-                 
-                  </div>
-                ))
-              : null}
-
-            {/* Empty State / Quick Add Card */}
-            <button className="h-full min-h-[220px] rounded-xl border-2 border-dashed border-muted hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group">
-              <Link
-                href={`/dashboard/workspaces/${slug}/projects/new`}
-                className="h-full w-full min-h-[220px] rounded-xl border-2 border-dashed ... border-muted hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-3 group"
-              >
-                <div className="p-3 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
-                  <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
-                </div>
-                <span className="text-sm font-medium text-muted-foreground group-hover:text-primary">
-                  Add New Project
-                </span>
-              </Link>
-            </button>
-          </div>
-        </section>
+          </Link>
+        ))}
+      </div>
+    )
+  ) : (
+    <div className="flex flex-col items-center justify-center py-20 border border-dashed rounded-xl text-muted-foreground">
+      <SearchX className="h-10 w-10 mb-2 opacity-50" />
+      <p>No projects found matching your criteria.</p>
+    </div>
+  )}
+</section>
       </main>
     </div>
   );
