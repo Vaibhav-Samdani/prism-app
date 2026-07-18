@@ -96,7 +96,6 @@ tsconfig.json           # TypeScript configuration
    npm install
    ```
 3. Configure Environment Variables: Create a .env file in the root directory:
-
   ```Code snippet
   DATABASE_URL=...
   OPENROUTER_API_KEY=...
@@ -104,7 +103,6 @@ tsconfig.json           # TypeScript configuration
   GOOGLE_CLIENT_SECRET=...
   ```
 4. Run migrations:
-
   ```Bash
   npx prisma migrate dev
   ```
