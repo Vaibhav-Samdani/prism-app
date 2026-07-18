@@ -166,7 +166,7 @@ export default function GlobalDashboardPage() {
           
           <div className="grid grid-cols-1 gap-3">
             {data?.workspaces?.map((ws: any) => (
-              <Link key={ws.id} href={`/dashboard/w/${ws.slug}`}>
+              <Link key={ws.id} href={`/w/${ws.slug}`}>
                 <Card className="shadow-sm border-border/60 hover:border-primary/50 transition-colors cursor-pointer group">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-md bg-secondary border border-border flex items-center justify-center text-secondary-foreground font-bold text-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">

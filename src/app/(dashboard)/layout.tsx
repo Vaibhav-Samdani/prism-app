@@ -1,5 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/app-sidebar";
+import "@excalidraw/excalidraw/index.css";
 
 export default function DashboardLayout({
   children,

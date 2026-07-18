@@ -52,7 +52,7 @@ export default function DashboardPage() {
           {workspaces.map((workspace) => (
             <Link
               key={workspace.id}
-              href={`/w/${workspace.slug}`}
+              href={`/dashboard/w/${workspace.slug}`}
               className="group relative rounded-xl border bg-background shadow-sm hover:shadow-md transition-all duration-200"
             >
               {/* Top cover */}
