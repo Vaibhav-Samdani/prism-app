@@ -126,6 +126,16 @@ export default function RichTextEditor({
     immediatelyRender: false,
   });
 
+  // We use a guard clause to only update content if it's different 
+  // from the current editor HTML to prevent infinite loops.
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value, false); // 'false' prevents cursor jumping
+    }
+  }, [value, editor]);
+
+  
+
   const handleLinkOpen = () => {
     setLinkUrl(editor?.getAttributes("link").href || "");
     setIsLinkDialogOpen(true);
@@ -166,11 +176,6 @@ export default function RichTextEditor({
     [editor],
   );
 
-  useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
-    }
-  }, [value, editor]);
 
   if (!editor) return null;
 

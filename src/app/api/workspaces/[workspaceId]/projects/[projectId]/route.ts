@@ -13,6 +13,58 @@ async function verifyAdminOrOwner(userId: string, workspaceId: string) {
   return membership?.role === "ADMIN" || membership?.role === "OWNER";
 }
 
+
+export async function GET(req: Request, { params }: RouteContext) {
+  try {
+    const user = await requireUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized", success: false }, { status: 401 });
+    }
+
+    const { projectId, workspaceId } = await params;
+
+    // 1. Authorization: Verify the user is a member of this specific workspace
+    const membership = await prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId: user.id,
+          workspaceId: workspaceId,
+        },
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: "Forbidden: You do not have access to this workspace", success: false },
+        { status: 403 }
+      );
+    }
+
+    // 2. Fetch the specific project, ensuring it belongs to the verified workspace
+    const project = await prisma.project.findUnique({
+      where: { 
+        id: projectId,
+      },
+    });
+
+    
+
+    // 3. Handle case where project doesn't exist
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found", success: false }, 
+        { status: 404 }
+      );
+    }
+
+    // Note: Changed variable name from 'projects' to 'project' since findUnique returns a single object
+    return NextResponse.json({ success: true, data: project }, { status: 200 });
+  } catch (error: any) {
+    console.error("Failed to fetch project:", error);
+    return NextResponse.json({ error: "Internal Server Error", success: false }, { status: 500 });
+  }
+}
+
 // PATCH: Edit details
 export async function PATCH(req: Request, context: RouteContext) {
   try {

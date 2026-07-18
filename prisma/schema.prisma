@@ -66,6 +66,7 @@ model User {
   sessions Session[]
   accounts Account[]
 
+  createdDocuments Document[] @relation("DocumentCreator")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -139,6 +140,7 @@ model Workspace {
   projects    Project[]
   invitations WorkspaceInvitation[]
   tasks       Task[] // Global Workspace Tasks
+  documents   Document[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -199,6 +201,7 @@ model Project {
   tasks       Task[]
   comments    Comment[]
   attachments Attachment[]
+  documents Document[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -294,4 +297,36 @@ model Attachment {
   @@index([uploadedById])
   @@index([projectId])
   @@index([taskId])
+}
+
+enum DocType {
+  TEXT
+  WHITEBOARD
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String   @default("Untitled")
+  type        DocType  @default(TEXT)
+  
+  // Holds Excalidraw array or Tiptap block schema structure
+  content     Json?    
+
+  // Hierarchy Scopes
+  workspaceId String
+  projectId   String
+  createdById String
+
+  // Explicit Relations
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation("DocumentCreator", fields: [createdById], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, id])
+  @@index([workspaceId])
+  @@index([projectId])
+  @@index([createdById])
 }

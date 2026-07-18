@@ -7,30 +7,56 @@ import { ProjectHeader } from "./project-header";
 import { TaskBoard } from "./views/task-board";
 import { DocsEditor } from "./views/docs-editor";
 import { CanvasBoard } from "./views/canvas-board";
+import { Workspace } from "@/types/workspace";
 
-import {Workspace} from "@/types/workspace";
-
-export function ProjectClient({ projectData, workspace, slug }: { projectData: any , workspace: Workspace, slug : string}) {
+export function ProjectClient({
+  projectData,
+  workspace,
+  slug,
+}: {
+  projectData: any;
+  workspace: Workspace | undefined;
+  slug: string;
+}) {
   const [activeTab, setActiveTab] = useState("tasks");
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full w-full">
-      {/* Top Context Bar */}
-      <ProjectHeader activeTab={activeTab} slug={slug} setActiveTab={setActiveTab} project={projectData} />
+    <Tabs
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="flex flex-col h-full w-full"
+    >
+      <ProjectHeader
+        activeTab={activeTab}
+        slug={slug}
+        setActiveTab={setActiveTab}
+        project={projectData}
+        workspace={workspace}
+      />
 
-      {/* View Switcher Content */}
       <div className="flex-1 overflow-hidden relative">
-        <TabsContent value="tasks" className="h-full m-0 data-[state=active]:flex flex-col">
-          <TaskBoard tasks={projectData.tasks} />
+        <TabsContent
+          value="tasks"
+          className="h-full m-0 data-[state=active]:flex flex-col"
+        >
+          <TaskBoard projectId={projectData.id} workspaceId={workspace?.id} />
         </TabsContent>
 
-        <TabsContent value="docs" className="h-full m-0 data-[state=active]:flex flex-col">
-          <DocsEditor />
+        <TabsContent
+          value="docs"
+          className="h-full m-0 data-[state=active]:flex flex-col"
+        >
+          {/* Injected relational identifiers */}
+          <DocsEditor workspaceId={workspace?.id || ""} projectId={projectData.id} />
         </TabsContent>
 
-        <TabsContent value="canvas" className="flex-1 m-0 p-6 data-[state=active]:flex flex-col h-full">
-  <CanvasBoard />
-</TabsContent>
+        <TabsContent
+          value="canvas"
+          className="flex-1 m-0 p-6 data-[state=active]:flex flex-col h-full"
+        >
+          {/* Injected relational identifiers */}
+          <CanvasBoard workspaceId={workspace?.id} projectId={projectData.id} />
+        </TabsContent>
       </div>
     </Tabs>
   );

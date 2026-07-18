@@ -43,7 +43,7 @@ export async function POST(req: Request, { params }: RouteContext) {
     const user = await requireUser();
     if (!user) return NextResponse.json({ error: "Unauthorized", success: false }, { status: 401 });
 
-    const { workspaceId, projectId } = params;
+    const { workspaceId, projectId } = await params;
     const body = await req.json();
     const { title, description, status, priority, dueDate, assigneeId } = body;
 

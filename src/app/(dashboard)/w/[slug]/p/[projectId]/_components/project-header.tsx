@@ -14,7 +14,7 @@ export function ProjectHeader({ activeTab, project, slug, workspace }: any) {
         
         {/* Breadcrumbs */}
         <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-          <Link href={`/dashboard/w/${slug}`} className="hover:text-foreground transition-colors px-1 rounded-md hover:bg-muted">
+          <Link href={`/w/${slug}`} className="hover:text-foreground transition-colors px-1 rounded-md hover:bg-muted">
             Projects
           </Link>
           <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
